@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kik — 로컬 LLM 계획 실행기</title>
+    <meta
+      name="description"
+      content="kik는 한국어 문장을 계획으로 컴파일해 로컬 LLM과 도구로 실행하고, 쓰기는 승인 뒤에만 하는 로컬 우선 프로젝트입니다."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="kik — 로컬 LLM 계획 실행기" />
+    <meta
+      property="og:description"
+      content="한국어 문장을 Plan IR로 컴파일해 로컬 LLM과 도구로 실행하고, 쓰기는 승인 뒤에만 합니다."
+    />
+    <meta property="og:url" content="https://bigif410.github.io/kik-site/" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">본문으로</a>
+
+    <header class="top">
+      <a class="brand" href="#main">kik</a>
+      <nav aria-label="섹션">
+        <a href="#what">무엇을</a>
+        <a href="#flow">흐름</a>
+        <a href="#parts">구성</a>
+        <a href="#numbers">측정</a>
+        <a href="#status">상태</a>
+        <a class="gh" href="https://github.com/bigif410/kik-site">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="badge">local-first · llama.cpp · Tauri</p>
+          <h1>계획을 세우고,<br />확인하고, 그다음 실행합니다.</h1>
+          <p class="lede">
+            kik는 한국어 문장을 <strong>Plan IR</strong>로 컴파일합니다. 날씨·캘린더 같은 도구는
+            기계적으로 호출하고, LLM은 판단과 최종 문장에만 씁니다. 일정 등록 같은 쓰기는
+            <strong>사람의 승인 뒤에만</strong> 일어납니다.
+          </p>
+          <div class="cta">
+            <a class="primary" href="#parts">구성 보기</a>
+            <a href="#flow">흐름 보기</a>
+          </div>
+        </div>
+
+        <div class="mock" aria-hidden="true">
+          <div class="mock-bar"><span></span><span></span><span></span></div>
+          <pre><code><i>[send]</i> POST /plans now=2026-10-23T09:03+09:00 location=강남구
+<i>[plan]</i> if weather.good then calendar.create
+<i>[tool]</i> weather.forecast 서울 · 2026-10-24T19:00
+<i>[judge]</i> walk_ok=true coat_needed=true 0.86
+<i>[final]</i> confirm: 산책 일정을 등록할까요?
+<i>[wait]</i> 사람의 승인을 기다립니다</code></pre>
+          <div class="mock-actions"><span>등록</span><span>취소</span></div>
+        </div>
+      </section>
+
+      <section id="what">
+        <h2>무엇을 하나</h2>
+        <div class="cards">
+          <article>
+            <h3>문장 → 계획</h3>
+            <p>
+              mecab-ko 파서가 절·슬롯을 뽑고, 규칙이 <code>seq</code>·<code>if</code>·<code>call</code
+              >·<code>judge</code>·<code>final</code>·<code>confirm</code> 노드로 컴파일합니다. LLM은
+              구조를 만들지 않습니다.
+            </p>
+          </article>
+          <article>
+            <h3>도구는 고정</h3>
+            <p>
+              어떤 도구를 어떤 순서로 부를지는 계획이 정합니다. 날씨는 기상청(KMA) 실측, 일정은
+              로컬 SQLite에서 읽고 씁니다.
+            </p>
+          </article>
+          <article>
+            <h3>쓰기는 승인 뒤</h3>
+            <p>
+              최종 답변은 얇은 JSON envelope입니다. 클라이언트는 표시·확인만 하고, 승인 전에는
+              쓰기 요청이 0회입니다. 같은 확인은 멱등입니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="flow">
+        <h2>한 번의 요청, 하나의 흐름</h2>
+        <ol class="steps">
+          <li>
+            <span class="n">1</span>
+            <div>
+              <h3>입력</h3>
+              <p>
+                클라이언트가 현재 시각과 수동 위치를 함께 보냅니다. 위치는 한 번만 지오코딩해
+                좌표로 저장합니다.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="n">2</span>
+            <div>
+              <h3>컴파일</h3>
+              <p>
+                <code>내일 저녁</code> 같은 상대 시간을 KST 절대 시각으로 바꾸고, 빠진 슬롯이 있으면
+                실행 대신 <code>ask</code>로 되돌립니다.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="n">3</span>
+            <div>
+              <h3>실행</h3>
+              <p>
+                16k 컨텍스트에서 판단하고, 4k 컨텍스트에서 최종 문장을 만듭니다. 두 컨텍스트는
+                계획 사이에 재사용합니다.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="n">4</span>
+            <div>
+              <h3>확인</h3>
+              <p>
+                <code>kind=confirm</code>이면 등록/취소를 기다립니다. 슬롯이 겹치면 확인 대신
+                충돌을 알리는 답을 줍니다.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section id="parts">
+        <h2>구성</h2>
+        <div class="cards parts">
+          <article>
+            <h3><code>kik-daemon</code></h3>
+            <p>C++23 + llama.cpp. 모델·컨텍스트·KV·추론을 소유하고 유닉스 소켓으로만 말합니다.</p>
+          </article>
+          <article>
+            <h3><code>kik-cli</code></h3>
+            <p>데몬 소켓과 말하는 유일한 프로세스. 사람과 API가 쓰는 얇은 명령 클라이언트입니다.</p>
+          </article>
+          <article>
+            <h3><code>kik-api</code></h3>
+            <p>Node 26 + Fastify. <code>/plans</code>·도구 실행·타임라인 SQLite·확인 토큰을 소유합니다.</p>
+          </article>
+          <article>
+            <h3><code>kik-parserd</code></h3>
+            <p>mecab-ko 사이드카. 형태소·절 태그·슬롯만 돌려주고 실행은 하지 않습니다.</p>
+          </article>
+          <article>
+            <h3><code>kik-client</code></h3>
+            <p>Tauri 2 + Svelte 5. 프레임 없는 입력창, 로그, 결과 카드, 메뉴 막대 아이콘.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="numbers">
+        <h2>측정 (p1, Qwen3-4B, CPU)</h2>
+        <div class="stats">
+          <div><strong>23.7</strong><span>judge tok/s</span></div>
+          <div><strong>21.1</strong><span>final tok/s</span></div>
+          <div><strong>6.8–8.1초</strong><span>계획 1건</span></div>
+          <div><strong>1</strong><span>lane 기본</span></div>
+        </div>
+        <p class="note">
+          계획 1건 = 날씨 1.7초 + 판단 2.2초 + 최종 3.5초. 파싱은 0.01초. lane을 2개로 늘리면
+          경합 때문에 tok/s가 11대로 떨어져 기본은 1개입니다.
+        </p>
+      </section>
+
+      <section id="status">
+        <h2>상태</h2>
+        <ul class="status">
+          <li><b>0</b> 한국어 파서 사이드카</li>
+          <li><b>1</b> Plan IR · <code>ask</code> · dry-run</li>
+          <li><b>2</b> 4k final · JSON envelope · client 카드</li>
+          <li><b>3</b> KMA 날씨 · 16k 판단</li>
+          <li><b>4</b> SQLite 캘린더 · 승인 후 쓰기</li>
+          <li><b>5</b> 재사용 풀 · <code>/metrics</code></li>
+          <li class="next"><b>6</b> 인증 · 메일 검색(선택) — 예정</li>
+        </ul>
+        <p class="note">
+          공유 multi-seq(<code>seq_id</code>)는 아직 데몬에 없습니다. 지금의 처리량 이득은 컨텍스트
+          재사용과 측정에서 옵니다.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        kik 소개 페이지 · <a href="https://github.com/bigif410/kik-site">github.com/bigif410/kik-site</a>
+        · 프로젝트 저장소는 비공개입니다. 라이선스는 아직 정하지 않았습니다.
+      </p>
+    </footer>
+  </body>
+</html>
