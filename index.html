@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>kik — 로컬 LLM 계획 실행기</title>
+    <title>kik — 말하면 계획이 되고, 승인하면 실행된다</title>
     <meta
       name="description"
-      content="kik는 한국어 문장을 계획으로 컴파일해 로컬 LLM과 도구로 실행하고, 쓰기는 승인 뒤에만 하는 로컬 우선 프로젝트입니다."
+      content="kik는 한국어 한 문장을 실행 가능한 계획으로 바꿉니다. 모델은 기기에서만 돌고, 도구는 계획이 고정하며, 쓰기는 당신의 승인을 거칩니다."
     />
     <meta name="color-scheme" content="dark" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="kik — 로컬 LLM 계획 실행기" />
+    <meta property="og:title" content="kik — 말하면 계획이 되고, 승인하면 실행된다" />
     <meta
       property="og:description"
-      content="한국어 문장을 Plan IR로 컴파일해 로컬 LLM과 도구로 실행하고, 쓰기는 승인 뒤에만 합니다."
+      content="로컬 LLM이 계획을 세우고, 도구로 확인하고, 승인 뒤에만 씁니다. 클라우드 없이."
     />
     <meta property="og:url" content="https://bigif410.github.io/kik-site/" />
     <link rel="stylesheet" href="./style.css" />
@@ -24,7 +24,7 @@
     <header class="top">
       <a class="brand" href="#main">kik</a>
       <nav aria-label="섹션">
-        <a href="#what">무엇을</a>
+        <a href="#why">왜</a>
         <a href="#flow">흐름</a>
         <a href="#parts">구성</a>
         <a href="#numbers">측정</a>
@@ -36,17 +36,22 @@
     <main id="main">
       <section class="hero">
         <div class="hero-copy">
-          <p class="badge">local-first · llama.cpp · Tauri</p>
-          <h1>계획을 세우고,<br />확인하고, 그다음 실행합니다.</h1>
+          <p class="badge">100% 로컬 추론 · llama.cpp · Tauri</p>
+          <h1>말하면 계획이 되고,<br /><span class="grad">승인하면 실행된다.</span></h1>
           <p class="lede">
-            kik는 한국어 문장을 <strong>Plan IR</strong>로 컴파일합니다. 날씨·캘린더 같은 도구는
-            기계적으로 호출하고, LLM은 판단과 최종 문장에만 씁니다. 일정 등록 같은 쓰기는
-            <strong>사람의 승인 뒤에만</strong> 일어납니다.
+            kik는 한국어 한 문장을 <strong>실행 가능한 계획</strong>으로 바꿉니다. 모델은 당신의
+            기기에서만 돌고, 도구는 계획이 고정하며, 쓰기는 <strong>당신의 손</strong>을 거칩니다.
           </p>
           <div class="cta">
-            <a class="primary" href="#parts">구성 보기</a>
+            <a class="primary" href="#why">왜 다른가</a>
             <a href="#flow">흐름 보기</a>
           </div>
+          <ul class="chips" aria-label="특징">
+            <li>클라우드 없음</li>
+            <li>도구 고정</li>
+            <li>승인 후 쓰기</li>
+            <li>JSON envelope</li>
+          </ul>
         </div>
 
         <div class="mock" aria-hidden="true">
@@ -61,31 +66,45 @@
         </div>
       </section>
 
-      <section id="what">
-        <h2>무엇을 하나</h2>
-        <div class="cards">
-          <article>
-            <h3>문장 → 계획</h3>
+      <section class="band" aria-label="요약 수치">
+        <div><strong>23.7</strong><span>판단 tok/s</span></div>
+        <div><strong>21.1</strong><span>최종 tok/s</span></div>
+        <div><strong>6.8–8.1초</strong><span>계획 1건</span></div>
+        <div><strong>0회</strong><span>승인 전 쓰기</span></div>
+      </section>
+
+      <section id="why">
+        <h2>왜 kik인가</h2>
+        <div class="cards why">
+          <article class="feature">
+            <h3>클라우드가 없다</h3>
             <p>
-              mecab-ko 파서가 절·슬롯을 뽑고, 규칙이 <code>seq</code>·<code>if</code>·<code>call</code
-              >·<code>judge</code>·<code>final</code>·<code>confirm</code> 노드로 컴파일합니다. LLM은
-              구조를 만들지 않습니다.
+              프롬프트도, 일정도, 대화도 밖으로 나가지 않습니다. 모델은 당신의 기기에서 돌고,
+              데이터는 당신의 디스크에 남습니다.
             </p>
           </article>
-          <article>
-            <h3>도구는 고정</h3>
+          <article class="feature">
+            <h3>도구를 고르지 않는다</h3>
             <p>
-              어떤 도구를 어떤 순서로 부를지는 계획이 정합니다. 날씨는 기상청(KMA) 실측, 일정은
-              로컬 SQLite에서 읽고 씁니다.
+              LLM은 어떤 도구를 부를지 고르지 않습니다. 계획이 정하고, 모델은 판단과 문장만 씁니다.
+              엉뚱한 API 호출이 끼어들 자리를 설계에서 지웠습니다.
             </p>
           </article>
-          <article>
-            <h3>쓰기는 승인 뒤</h3>
+          <article class="feature">
+            <h3>쓰기는 사람이</h3>
             <p>
-              최종 답변은 얇은 JSON envelope입니다. 클라이언트는 표시·확인만 하고, 승인 전에는
-              쓰기 요청이 0회입니다. 같은 확인은 멱등입니다.
+              일정 등록은 승인 뒤에 한 번. 같은 확인은 멱등입니다. 승인 전 쓰기는 <strong>0회</strong>.
+              자동화도 같은 규칙을 따릅니다.
             </p>
           </article>
+        </div>
+
+        <div class="compare">
+          <div class="compare-head"><span></span><b>보통 챗봇</b><b class="kik">kik</b></div>
+          <div class="compare-row"><span>도구 선택</span><em>모델이 즉흥적으로</em><strong>계획이 고정</strong></div>
+          <div class="compare-row"><span>실행</span><em>바로 실행</em><strong>승인 후 실행</strong></div>
+          <div class="compare-row"><span>데이터</span><em>클라우드</em><strong>내 기기</strong></div>
+          <div class="compare-row"><span>결과</span><em>자연어</em><strong>JSON + 확인</strong></div>
         </div>
       </section>
 
@@ -171,7 +190,7 @@
         </div>
         <p class="note">
           계획 1건 = 날씨 1.7초 + 판단 2.2초 + 최종 3.5초. 파싱은 0.01초. lane을 2개로 늘리면
-          경합 때문에 tok/s가 11대로 떨어져 기본은 1개입니다.
+          경합 때문에 tok/s가 11대로 떨어져 기본은 1개입니다. 좋은 숫자만 고르지 않았습니다.
         </p>
       </section>
 
@@ -190,6 +209,18 @@
           공유 multi-seq(<code>seq_id</code>)는 아직 데몬에 없습니다. 지금의 처리량 이득은 컨텍스트
           재사용과 측정에서 옵니다.
         </p>
+      </section>
+
+      <section class="final">
+        <h2>로컬에서, 계획대로.</h2>
+        <p>
+          모델은 기기 안에, 도구는 계획 안에, 쓰기는 당신 손에. kik는 그 세 가지를 분리하는
+          것에서 시작했습니다.
+        </p>
+        <div class="cta">
+          <a class="primary" href="#main">처음으로</a>
+          <a href="https://github.com/bigif410/kik-site">이 페이지 소스</a>
+        </div>
       </section>
     </main>
 
