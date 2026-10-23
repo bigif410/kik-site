@@ -1,234 +1,325 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>kik — 말하면 계획이 되고, 승인하면 실행된다</title>
+    <title>kik Documentation — a local-first planner</title>
     <meta
       name="description"
-      content="kik는 한국어 한 문장을 실행 가능한 계획으로 바꿉니다. 모델은 기기에서만 돌고, 도구는 계획이 고정하며, 쓰기는 당신의 승인을 거칩니다."
+      content="kik compiles a Korean sentence into an executable plan, calls tools deterministically, and writes only after you approve. Documentation, architecture and measured numbers."
     />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="kik — 말하면 계획이 되고, 승인하면 실행된다" />
+    <meta property="og:title" content="kik Documentation" />
     <meta
       property="og:description"
-      content="로컬 LLM이 계획을 세우고, 도구로 확인하고, 승인 뒤에만 씁니다. 클라우드 없이."
+      content="A local-first planner: deterministic tools, a local LLM for judgment, and writes only after approval."
     />
     <meta property="og:url" content="https://bigif410.github.io/kik-site/" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <a class="skip" href="#main">본문으로</a>
+    <a class="skip" href="#content">Skip to content</a>
 
-    <header class="top">
-      <a class="brand" href="#main">kik</a>
-      <nav aria-label="섹션">
-        <a href="#why">왜</a>
-        <a href="#flow">흐름</a>
-        <a href="#parts">구성</a>
-        <a href="#numbers">측정</a>
-        <a href="#status">상태</a>
-        <a class="gh" href="https://github.com/bigif410/kik-site">GitHub ↗</a>
+    <header class="site-header">
+      <a class="wordmark" href="#content">kik</a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="#get-started">Docs</a>
+        <a href="https://github.com/bigif410/kik-site">GitHub</a>
+        <a class="button" href="#get-started">Get started</a>
       </nav>
     </header>
 
-    <main id="main">
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="badge">100% 로컬 추론 · llama.cpp · Tauri</p>
-          <h1>말하면 계획이 되고,<br /><span class="grad">승인하면 실행된다.</span></h1>
-          <p class="lede">
-            kik는 한국어 한 문장을 <strong>실행 가능한 계획</strong>으로 바꿉니다. 모델은 당신의
-            기기에서만 돌고, 도구는 계획이 고정하며, 쓰기는 <strong>당신의 손</strong>을 거칩니다.
+    <div class="layout">
+      <aside class="sidebar">
+        <nav aria-label="Documentation">
+          <p class="group">Overview</p>
+          <a href="#overview">Introduction</a>
+          <a href="#get-started">Get started</a>
+
+          <p class="group">Design</p>
+          <a href="#architecture">Architecture</a>
+          <a href="#plans">Plans</a>
+          <a href="#tools">Tools</a>
+          <a href="#client">Client</a>
+
+          <p class="group">Reference</p>
+          <a href="#performance">Performance</a>
+          <a href="#status">Status</a>
+        </nav>
+      </aside>
+
+      <main id="content">
+        <p class="crumb">kik Docs</p>
+        <h1>kik Documentation</h1>
+        <p class="lede">
+          kik is a local-first planner. It compiles a Korean sentence into an executable plan,
+          calls tools deterministically, asks a local LLM only for judgment and wording, and
+          performs writes only after you approve them.
+        </p>
+
+        <section id="overview">
+          <h2>Introduction <a class="anchor" href="#overview" aria-label="Link to Introduction">#</a></h2>
+          <p>
+            Most assistants let the model choose tools and act immediately. kik separates those
+            decisions: a parser and a rules compiler produce a plan, the plan fixes which tools
+            run and in what order, and the model is reserved for judging evidence and writing the
+            final sentence.
           </p>
-          <div class="cta">
-            <a class="primary" href="#why">왜 다른가</a>
-            <a href="#flow">흐름 보기</a>
-          </div>
-          <ul class="chips" aria-label="특징">
-            <li>클라우드 없음</li>
-            <li>도구 고정</li>
-            <li>승인 후 쓰기</li>
-            <li>JSON envelope</li>
+          <p>
+            The result is a thin JSON envelope the client can render, confirm, or reject. Nothing
+            is written to a calendar before a human approves it, and the same approval is
+            idempotent.
+          </p>
+          <ul class="plain">
+            <li><strong>Model:</strong> one local model (Qwen3-4B) on llama.cpp, no cloud calls.</li>
+            <li><strong>Tools:</strong> fixed by the plan, not selected by the model.</li>
+            <li><strong>Writes:</strong> approval-gated and idempotent.</li>
+            <li><strong>Output:</strong> a small JSON envelope, not prose to parse.</li>
           </ul>
-        </div>
+        </section>
 
-        <div class="mock" aria-hidden="true">
-          <div class="mock-bar"><span></span><span></span><span></span></div>
-          <pre><code><i>[send]</i> POST /plans now=2026-10-23T09:03+09:00 location=강남구
-<i>[plan]</i> if weather.good then calendar.create
-<i>[tool]</i> weather.forecast 서울 · 2026-10-24T19:00
-<i>[judge]</i> walk_ok=true coat_needed=true 0.86
-<i>[final]</i> confirm: 산책 일정을 등록할까요?
-<i>[wait]</i> 사람의 승인을 기다립니다</code></pre>
-          <div class="mock-actions"><span>등록</span><span>취소</span></div>
-        </div>
-      </section>
+        <section id="get-started">
+          <h2>Get started <a class="anchor" href="#get-started" aria-label="Link to Get started">#</a></h2>
+          <p>
+            kik runs as a long-lived server on a Linux host and a small desktop client on macOS.
+            The server boots a C++ daemon on llama.cpp, a Node API, and three sidecars. The client
+            speaks only to the API.
+          </p>
+          <p class="muted">
+            The source repository is private. This page and its git history are public; the design
+            notes below describe the shipped behaviour and measured numbers.
+          </p>
 
-      <section class="band" aria-label="요약 수치">
-        <div><strong>23.7</strong><span>판단 tok/s</span></div>
-        <div><strong>21.1</strong><span>최종 tok/s</span></div>
-        <div><strong>6.8–8.1초</strong><span>계획 1건</span></div>
-        <div><strong>0회</strong><span>승인 전 쓰기</span></div>
-      </section>
+          <h3>Requirements</h3>
+          <ul class="plain">
+            <li>Linux host with llama.cpp (Vulkan or Metal) and a 4B-class model.</li>
+            <li>Node 26 for the API and sidecars.</li>
+            <li>macOS with Tauri 2 for the client.</li>
+          </ul>
 
-      <section id="why">
-        <h2>왜 kik인가</h2>
-        <div class="cards why">
-          <article class="feature">
-            <h3>클라우드가 없다</h3>
-            <p>
-              프롬프트도, 일정도, 대화도 밖으로 나가지 않습니다. 모델은 당신의 기기에서 돌고,
-              데이터는 당신의 디스크에 남습니다.
-            </p>
-          </article>
-          <article class="feature">
-            <h3>도구를 고르지 않는다</h3>
-            <p>
-              LLM은 어떤 도구를 부를지 고르지 않습니다. 계획이 정하고, 모델은 판단과 문장만 씁니다.
-              엉뚱한 API 호출이 끼어들 자리를 설계에서 지웠습니다.
-            </p>
-          </article>
-          <article class="feature">
-            <h3>쓰기는 사람이</h3>
-            <p>
-              일정 등록은 승인 뒤에 한 번. 같은 확인은 멱등입니다. 승인 전 쓰기는 <strong>0회</strong>.
-              자동화도 같은 규칙을 따릅니다.
-            </p>
-          </article>
-        </div>
+          <h3>One request</h3>
+          <pre><code><span class="k">POST</span> /plans
+{
+  "message": "If the weather is nice tomorrow evening, add a walk.",
+  "location": "Gangnam-gu",
+  "lat": 37.4979,
+  "lon": 127.0276,
+  "now": "2026-10-23T09:03:00+09:00"
+}</code></pre>
 
-        <div class="compare">
-          <div class="compare-head"><span></span><b>보통 챗봇</b><b class="kik">kik</b></div>
-          <div class="compare-row"><span>도구 선택</span><em>모델이 즉흥적으로</em><strong>계획이 고정</strong></div>
-          <div class="compare-row"><span>실행</span><em>바로 실행</em><strong>승인 후 실행</strong></div>
-          <div class="compare-row"><span>데이터</span><em>클라우드</em><strong>내 기기</strong></div>
-          <div class="compare-row"><span>결과</span><em>자연어</em><strong>JSON + 확인</strong></div>
-        </div>
-      </section>
+          <p>The response is a plan plus a final envelope:</p>
+          <pre><code>{
+  "state": "waiting_confirmation",
+  "envelope": {
+    "v": 1,
+    "plan_id": "p-mvk4wo9p-4fb06456",
+    "kind": "confirm",
+    "message": "Tomorrow evening in Gangnam-gu it will be cloudy and 18°C. Add the walk?",
+    "action": { "tool": "calendar.create", "args": { "title": "walk", "start": "2026-10-24T19:00:00+09:00" } },
+    "requires_confirmation": true,
+    "confirm_token": "ct-...",
+    "state": "waiting_confirmation"
+  }
+}</code></pre>
+        </section>
 
-      <section id="flow">
-        <h2>한 번의 요청, 하나의 흐름</h2>
-        <ol class="steps">
-          <li>
-            <span class="n">1</span>
-            <div>
-              <h3>입력</h3>
-              <p>
-                클라이언트가 현재 시각과 수동 위치를 함께 보냅니다. 위치는 한 번만 지오코딩해
-                좌표로 저장합니다.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span class="n">2</span>
-            <div>
-              <h3>컴파일</h3>
-              <p>
-                <code>내일 저녁</code> 같은 상대 시간을 KST 절대 시각으로 바꾸고, 빠진 슬롯이 있으면
-                실행 대신 <code>ask</code>로 되돌립니다.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span class="n">3</span>
-            <div>
-              <h3>실행</h3>
-              <p>
-                16k 컨텍스트에서 판단하고, 4k 컨텍스트에서 최종 문장을 만듭니다. 두 컨텍스트는
-                계획 사이에 재사용합니다.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span class="n">4</span>
-            <div>
-              <h3>확인</h3>
-              <p>
-                <code>kind=confirm</code>이면 등록/취소를 기다립니다. 슬롯이 겹치면 확인 대신
-                충돌을 알리는 답을 줍니다.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
+        <section id="featured">
+          <h2>Featured documentation <a class="anchor" href="#featured" aria-label="Link to Featured documentation">#</a></h2>
+          <div class="cards">
+            <a class="card" href="#plans">
+              <h3>Plans</h3>
+              <p>Node types, compilation rules, relative-time resolution, and when kik asks instead of guessing.</p>
+            </a>
+            <a class="card" href="#tools">
+              <h3>Tools</h3>
+              <p>Weather from KMA, a SQLite calendar, and what approval actually guarantees.</p>
+            </a>
+            <a class="card" href="#performance">
+              <h3>Performance</h3>
+              <p>Measured tokens per second and latency on the reference host, including the slow case.</p>
+            </a>
+            <a class="card" href="#status">
+              <h3>Status</h3>
+              <p>What shipped, what is deliberately missing, and what comes next.</p>
+            </a>
+          </div>
+        </section>
 
-      <section id="parts">
-        <h2>구성</h2>
-        <div class="cards parts">
-          <article>
-            <h3><code>kik-daemon</code></h3>
-            <p>C++23 + llama.cpp. 모델·컨텍스트·KV·추론을 소유하고 유닉스 소켓으로만 말합니다.</p>
-          </article>
-          <article>
-            <h3><code>kik-cli</code></h3>
-            <p>데몬 소켓과 말하는 유일한 프로세스. 사람과 API가 쓰는 얇은 명령 클라이언트입니다.</p>
-          </article>
-          <article>
-            <h3><code>kik-api</code></h3>
-            <p>Node 26 + Fastify. <code>/plans</code>·도구 실행·타임라인 SQLite·확인 토큰을 소유합니다.</p>
-          </article>
-          <article>
-            <h3><code>kik-parserd</code></h3>
-            <p>mecab-ko 사이드카. 형태소·절 태그·슬롯만 돌려주고 실행은 하지 않습니다.</p>
-          </article>
-          <article>
-            <h3><code>kik-client</code></h3>
-            <p>Tauri 2 + Svelte 5. 프레임 없는 입력창, 로그, 결과 카드, 메뉴 막대 아이콘.</p>
-          </article>
-        </div>
-      </section>
+        <section id="architecture">
+          <h2>Architecture <a class="anchor" href="#architecture" aria-label="Link to Architecture">#</a></h2>
+          <p>
+            The boundary is the process. The daemon owns the model; only the CLI talks to its Unix
+            socket; the API runs the CLI and owns the public HTTP contract.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Process</th><th>Role</th><th>Boundary</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>kik-daemon</code></td><td>C++23 on llama.cpp. Models, contexts, KV cache, inference.</td><td>Unix socket only</td></tr>
+              <tr><td><code>kik-cli</code></td><td>Thin command client; the only daemon speaker.</td><td>Unix socket</td></tr>
+              <tr><td><code>kik-api</code></td><td>Node 26 + Fastify. <code>/plans</code>, tools, timelines, confirm tokens.</td><td>HTTP on the LAN</td></tr>
+              <tr><td><code>kik-parserd</code></td><td>mecab-ko sidecar. Morphology, clause tags, slots.</td><td>Loopback HTTP</td></tr>
+              <tr><td><code>kik-client</code></td><td>Tauri 2 + Svelte 5. Frameless input, logs, result card, tray.</td><td>API only</td></tr>
+            </tbody>
+          </table>
+        </section>
 
-      <section id="numbers">
-        <h2>측정 (p1, Qwen3-4B, CPU)</h2>
-        <div class="stats">
-          <div><strong>23.7</strong><span>judge tok/s</span></div>
-          <div><strong>21.1</strong><span>final tok/s</span></div>
-          <div><strong>6.8–8.1초</strong><span>계획 1건</span></div>
-          <div><strong>1</strong><span>lane 기본</span></div>
-        </div>
-        <p class="note">
-          계획 1건 = 날씨 1.7초 + 판단 2.2초 + 최종 3.5초. 파싱은 0.01초. lane을 2개로 늘리면
-          경합 때문에 tok/s가 11대로 떨어져 기본은 1개입니다. 좋은 숫자만 고르지 않았습니다.
+        <section id="plans">
+          <h2>Plans <a class="anchor" href="#plans" aria-label="Link to Plans">#</a></h2>
+          <p>
+            A plan is a small typed tree. The compiler builds it from parser output and rules; the
+            executor walks it in order.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Node</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>seq</code></td><td>Run steps in order.</td></tr>
+              <tr><td><code>if</code></td><td>Conditional branch, usually a weather condition.</td></tr>
+              <tr><td><code>call</code></td><td>Deterministic tool call with typed arguments.</td></tr>
+              <tr><td><code>judge</code></td><td>One LLM judgment over evidence, with a JSON schema.</td></tr>
+              <tr><td><code>final</code></td><td>Writes the user-facing message in a 4k context.</td></tr>
+              <tr><td><code>confirm</code></td><td>Approval gate before a write.</td></tr>
+              <tr><td><code>ask</code></td><td>Missing slot; stops before execution.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Relative time</h3>
+          <p>
+            The client sends <code>now</code> with every request. The compiler resolves
+            <code>tomorrow</code>, <code>this evening</code> and similar expressions against it in
+            KST, so the reference time is the user's, not the server's. If a time cannot be
+            resolved, the plan is an <code>ask</code>, not a guess.
+          </p>
+
+          <h3>Missing slots</h3>
+          <p>
+            When a required slot is absent the plan never executes. The API returns
+            <code>kind: "ask"</code> with the missing field names, and the client asks the user
+            instead of inventing a place or a time.
+          </p>
+
+          <h3>Final envelope</h3>
+          <p>
+            The model writes only <code>{"message": string}</code>. The server assembles
+            <code>v</code>, <code>plan_id</code>, <code>kind</code>, <code>action</code>,
+            <code>confirm_token</code> and <code>state</code>. A model cannot fabricate a token or
+            change the state machine.
+          </p>
+        </section>
+
+        <section id="tools">
+          <h2>Tools <a class="anchor" href="#tools" aria-label="Link to Tools">#</a></h2>
+          <p>
+            Tools are ordinary code with typed inputs, timeouts and error codes. The model never
+            picks one.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Tool</th><th>Input</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>weather.forecast</code></td><td><code>location</code>, <code>at</code>, optional <code>lat</code>/<code>lon</code></td><td>KMA grid. City table or Lambert conversion from coordinates.</td></tr>
+              <tr><td><code>calendar.availability</code></td><td><code>at</code>, <code>duration_min</code></td><td>Reads local SQLite for overlapping events.</td></tr>
+              <tr><td><code>calendar.create</code></td><td><code>title</code>, <code>start</code>, <code>duration_min</code></td><td>Only on confirm; idempotent per plan.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Approval</h3>
+          <p>
+            Before approval, the calendar write count is zero. Confirming once writes exactly one
+            row; confirming again returns the same event instead of duplicating it. If the slot is
+            already taken, kik answers with the conflict instead of offering a confirmation.
+          </p>
+
+          <h3>Unknown places</h3>
+          <p>
+            An unknown location is not a server error. The API returns an <code>ask</code> with
+            <code>missing: ["location"]</code>, and the client lets the user correct it. The client
+            geocodes a name once, stores the coordinates, and sends them with later requests.
+          </p>
+        </section>
+
+        <section id="client">
+          <h2>Client <a class="anchor" href="#client" aria-label="Link to Client">#</a></h2>
+          <p>
+            The macOS client is a frameless window anchored to the bottom-right: a log panel, an
+            optional result card, a location row, and the composer. It renders envelopes and never
+            defines them.
+          </p>
+          <ul class="plain">
+            <li>A location row stores a name and its coordinates once; each request carries <code>now</code> and the coordinates.</li>
+            <li>The result card shows the message and, for <code>confirm</code>, the action with approve and cancel.</li>
+            <li>A menu bar icon can show the window or reset its position.</li>
+          </ul>
+        </section>
+
+        <section id="performance">
+          <h2>Performance <a class="anchor" href="#performance" aria-label="Link to Performance">#</a></h2>
+          <p>
+            Measured on the reference host: Qwen3-4B-Instruct IQ4_NL on CPU, one request at a
+            time, one lane per role.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Stage</th><th>Time</th><th>Throughput</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Parse</td><td>0.01 s</td><td>—</td></tr>
+              <tr><td>Weather (KMA)</td><td>1.7 s</td><td>—</td></tr>
+              <tr><td>Judge (16k context)</td><td>2.2 s</td><td>23.7 tok/s</td></tr>
+              <tr><td>Final (4k context)</td><td>3.5 s</td><td>21.1 tok/s</td></tr>
+              <tr><td>One plan, end to end</td><td>6.8–8.1 s</td><td>—</td></tr>
+            </tbody>
+          </table>
+          <p class="muted">
+            Two lanes are worse on this host: CPU contention drops throughput to roughly 11 tok/s,
+            so the default stays at one. The fast case is not the only case reported here.
+          </p>
+          <p>
+            The 16k judge and 4k final contexts are reused between plans and reset after each
+            request. Shared multi-sequence batching (<code>seq_id</code>) is not implemented in the
+            daemon yet; the current gain comes from context reuse and measurement, not batching.
+          </p>
+        </section>
+
+        <section id="status">
+          <h2>Status <a class="anchor" href="#status" aria-label="Link to Status">#</a></h2>
+          <table>
+            <thead>
+              <tr><th>Phase</th><th>What</th><th>State</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>Korean parser sidecar</td><td>done</td></tr>
+              <tr><td>1</td><td>Plan IR, <code>ask</code>, dry-run</td><td>done</td></tr>
+              <tr><td>2</td><td>4k final, JSON envelope, client card</td><td>done</td></tr>
+              <tr><td>3</td><td>KMA weather, 16k judge</td><td>done</td></tr>
+              <tr><td>4</td><td>SQLite calendar, approval-gated writes</td><td>done</td></tr>
+              <tr><td>5</td><td>Context pool, <code>/metrics</code></td><td>done</td></tr>
+              <tr><td>6</td><td>Authentication, optional mail search</td><td>planned</td></tr>
+            </tbody>
+          </table>
+          <p class="muted">
+            The API currently has no authentication. It is meant for a trusted network until phase
+            6 lands.
+          </p>
+        </section>
+
+        <p class="edit">
+          <a href="https://github.com/bigif410/kik-site/blob/main/index.html">Edit this page on GitHub</a>
         </p>
-      </section>
+      </main>
+    </div>
 
-      <section id="status">
-        <h2>상태</h2>
-        <ul class="status">
-          <li><b>0</b> 한국어 파서 사이드카</li>
-          <li><b>1</b> Plan IR · <code>ask</code> · dry-run</li>
-          <li><b>2</b> 4k final · JSON envelope · client 카드</li>
-          <li><b>3</b> KMA 날씨 · 16k 판단</li>
-          <li><b>4</b> SQLite 캘린더 · 승인 후 쓰기</li>
-          <li><b>5</b> 재사용 풀 · <code>/metrics</code></li>
-          <li class="next"><b>6</b> 인증 · 메일 검색(선택) — 예정</li>
-        </ul>
-        <p class="note">
-          공유 multi-seq(<code>seq_id</code>)는 아직 데몬에 없습니다. 지금의 처리량 이득은 컨텍스트
-          재사용과 측정에서 옵니다.
-        </p>
-      </section>
-
-      <section class="final">
-        <h2>로컬에서, 계획대로.</h2>
-        <p>
-          모델은 기기 안에, 도구는 계획 안에, 쓰기는 당신 손에. kik는 그 세 가지를 분리하는
-          것에서 시작했습니다.
-        </p>
-        <div class="cta">
-          <a class="primary" href="#main">처음으로</a>
-          <a href="https://github.com/bigif410/kik-site">이 페이지 소스</a>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <p>
-        kik 소개 페이지 · <a href="https://github.com/bigif410/kik-site">github.com/bigif410/kik-site</a>
-        · 프로젝트 저장소는 비공개입니다. 라이선스는 아직 정하지 않았습니다.
-      </p>
+    <footer class="site-footer">
+      <nav aria-label="Footer">
+        <a href="#content">Docs</a>
+        <a href="https://github.com/bigif410/kik-site">GitHub</a>
+      </nav>
+      <p>© 2026 kik</p>
     </footer>
   </body>
 </html>

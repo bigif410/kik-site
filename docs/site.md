@@ -1,32 +1,34 @@
-# 소개 페이지 — GitHub Pages
+# Site — GitHub Pages
 
-> **상태** — **구현**. 2026-10-23. 이 저장소가 소개 페이지를 소유한다.
+> **Status** — implemented 2026-10-23. This repository owns the public docs page.
 >
-> 원본 프로젝트 저장소(`kik-server`)는 비공개라 GitHub Pages를 쓸 수 없어, 공개 저장소를 따로 둔다.
+> The project repository (`kik-server`) is private, so GitHub Pages is hosted from this public
+> repository instead.
 
-## 1. 목표
+## Goals
 
-- 저장소를 처음 보는 사람이 30초 안에 "무엇을 하는 프로젝트인지" 알게 한다.
-- 빌드 도구 없이 동작한다. 외부 CDN·폰트·스크립트를 쓰지 않는다.
-- GitHub Pages로 배포한다: https://bigif410.github.io/kik-site/
+- A visitor understands what kik is within 30 seconds.
+- No build step and no external requests (no CDN, no web fonts, no third-party scripts).
+- Documentation layout: sidebar, content column, featured cards, edit link.
+- Light and dark themes from `prefers-color-scheme`.
 
-## 2. 구성
+## Files
 
-| 파일 | 역할 |
+| File | Role |
 |---|---|
-| `index.html` | 한 페이지. 내용·구조 |
-| `style.css` | 스타일. 외부 요청 없음 |
-| `.github/workflows/pages.yml` | `index.html`·`style.css`를 Pages로 배포 |
+| `index.html` | Single page: introduction, get started, design, reference |
+| `style.css` | Typography and layout; system fonts only |
+| `.github/workflows/pages.yml` | Publishes `index.html` and `style.css` to Pages |
 
-## 3. 규칙
+## Rules
 
-- 한국어. 식별자·경로는 원문 그대로.
-- 수치는 실측값만 쓴다. 약속하지 않는다.
-- 프로젝트 저장소가 비공개이므로 코드·문서 링크를 걸지 않는다.
-- 다크 테마, 시스템 폰트, 반응형. 360px에서 가로 스크롤이 없어야 한다.
+- English. Identifiers and paths keep their exact spelling.
+- Numbers are measured values only (`23.7 tok/s`, `21.1 tok/s`, `6.8–8.1 s`); no promises.
+- The project repository is private, so the page does not link to its code.
+- No horizontal scroll at 360 px.
 
-## 4. 수용 기준
+## Acceptance
 
-1. 외부 요청 없이 렌더링된다(폰트·이미지·스크립트 CDN 없음).
-2. 360px에서 가로 스크롤이 없다.
-3. 링크는 이 저장소와 페이지 내부 앵커만 가리킨다.
+1. Renders with zero external requests.
+2. No horizontal scroll at 360 px.
+3. Links point to this repository, in-page anchors, or the GitHub profile.

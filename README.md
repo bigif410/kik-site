@@ -1,16 +1,16 @@
 # kik-site
 
-kik 프로젝트 소개 페이지. GitHub Pages로 배포한다.
+Public documentation site for **kik**, a local-first planner.
 
-- 페이지: https://bigif410.github.io/kik-site/
-- 원본 프로젝트 저장소는 비공개다.
+- Page: https://bigif410.github.io/kik-site/
+- The project repository is private; this repo holds only the site.
 
-## 수정
+## Edit
 
-- `index.html` — 내용·구조
-- `style.css` — 스타일 (외부 CDN·폰트 없음)
+- `index.html` — content and structure
+- `style.css` — typography, light/dark theme, no external assets
 
-## 미리보기
+## Preview
 
 ```sh
 python3 -m http.server -d . 8099
